@@ -51,7 +51,24 @@ export class Game extends Scene {
       // change the values of the field properties in the tile objects
       // change the values of the tile properties in the field objects
       this.board.swap(selectedTile, tile);
+
+      const matches = this.combinationManager.getMatches();
+      if (matches.length) {
+        this.processMatches(matches);
+      }
       this.disabled = false; // unlock the board
+    });
+  }
+
+  processMatches(matches) {
+    this.removeMatches(matches);
+  }
+
+  removeMatches(matches) {
+    matches.forEach((match) => {
+      match.forEach((tile) => {
+        tile.remove();
+      });
     });
   }
 

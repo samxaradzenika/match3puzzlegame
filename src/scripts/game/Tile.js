@@ -33,4 +33,16 @@ export class Tile {
       1
     );
   }
+  remove() {
+    if (!this.sprite) {
+      return;
+    }
+    this.sprite.destroy();
+    this.sprite = null;
+
+    if (this.field) {
+      this.field.tile = null;
+      this.field = null;
+    }
+  }
 }
