@@ -9,7 +9,18 @@ export const Config = {
     Game: Game,
   },
   board: {
-    rows: 6,
-    cols: 6,
+    rows: 8,
+    cols: 8,
   },
+  combinationRules: [
+    [
+      {col: 1, row: 0},
+      {col: 2, row: 0},
+    ],
+    [
+      {col: 0, row: 1},
+      {col: 0, row: 2},
+    ],
+  ],
+  tilesColors: ["blue", "green", "orange", "red", "pink", "yellow"],
 };
