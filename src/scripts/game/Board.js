@@ -45,6 +45,7 @@ export class Board {
 
     field.setTile(tile);
     this.container.addChild(tile.sprite);
+    return tile;
   }
   swap(tile1, tile2) {
     const tile1Field = tile1.field;
