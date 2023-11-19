@@ -9,8 +9,8 @@ export const Config = {
     Game: Game,
   },
   board: {
-    rows: 6,
-    cols: 6,
+    rows: 10,
+    cols: 10,
   },
   combinationRules: [
     [

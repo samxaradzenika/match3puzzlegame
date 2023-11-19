@@ -16,8 +16,26 @@ export class Game extends Scene {
     this.board.container.on("tile-touch-start", this.onTileClick.bind(this));
 
     this.combinationManager = new CombinationManager(this.board);
-  }
 
+    this.removeStartMatches();
+  }
+  removeStartMatches() {
+    let matches = this.combinationManager.getMatches(); // find combinations to collect
+
+    while (matches.length) {
+      // as long as there are combinations
+      this.removeMatches(matches); // remove tiles in combinations
+
+      const fields = this.board.fields.filter((field) => field.tile === null); // find empty fields
+
+      fields.forEach((field) => {
+        // in each empty field
+        this.board.createTile(field); // create a new random tile
+      });
+
+      matches = this.combinationManager.getMatches(); // looking for combinations again after adding new tiles
+    }
+  }
   onTileClick(tile) {
     if (this.disabled) {
       return;
@@ -39,32 +57,41 @@ export class Game extends Scene {
     this.selectedTile = tile;
     this.selectedTile.field.select();
   }
-  swap(selectedTile, tile) {
-    this.disabled = true; // lock the board to prevent tiles from moving again while the animation is already running
-    this.clearSelection(); // hide the "field-selected" frame from the field of the selectedTile object
-    selectedTile.sprite.zIndex = 2; // place the selectedTile sprite one layer higher than the tile sprite
+  swap(selectedTile, tile, reverse) {
+    this.disabled = true;
+    selectedTile.sprite.zIndex = 2;
 
-    selectedTile.moveTo(tile.field.position, 0.2); // move selectedTile to tile position
-    // move tile to electedTile position
+    selectedTile.moveTo(tile.field.position, 0.2);
+
+    this.clearSelection();
+
     tile.moveTo(selectedTile.field.position, 0.2).then(() => {
-      // after motion animations complete:
-      // change the values of the field properties in the tile objects
-      // change the values of the tile properties in the field objects
       this.board.swap(selectedTile, tile);
 
-      const matches = this.combinationManager.getMatches();
-      if (matches.length) {
-        this.processMatches(matches);
+      // after the swap, check if it was the main swap or reverse
+      if (!reverse) {
+        // if this is the main swap, then we are looking for combinations
+        const matches = this.combinationManager.getMatches();
+        if (matches.length) {
+          // if there are combinations, then process them
+          this.processMatches(matches);
+        } else {
+          // if there are no combinations after the main swap, then perform a reverse swap by running the same method, but with the reverse parameter
+          this.swap(tile, selectedTile, true);
+        }
+      } else {
+        // in this condition, by the reverse flag, we understand that the swap was reversed, so there is no need to look for combinations.
+        // all you need to do is unlock the board, because here the movement is already completed and there are no other animations
+        this.disabled = false;
       }
-      this.disabled = false; // unlock the board
     });
   }
 
   processMatches(matches) {
     this.removeMatches(matches);
-    this.processFallDown().then(() => {
-      this.addTiles();
-    });
+    this.processFallDown()
+      .then(() => this.addTiles())
+      .then(() => this.onFallDownOver());
   }
 
   removeMatches(matches) {
@@ -74,7 +101,15 @@ export class Game extends Scene {
       });
     });
   }
+  onFallDownOver() {
+    const matches = this.combinationManager.getMatches();
 
+    if (matches.length) {
+      this.processMatches(matches);
+    } else {
+      this.disabled = false;
+    }
+  }
   processFallDown() {
     return new Promise((resolve) => {
       let completed = 0;
